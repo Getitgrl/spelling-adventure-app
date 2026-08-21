@@ -1,9 +1,0 @@
-{
-  "name": "Spelling Adventure",
-  "short_name": "Spelling",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#0e1117",
-  "theme_color": "#111318",
-  "icons": []
-}
