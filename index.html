@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111318">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Spelling Adventure">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Spelling Adventure</title>
+  <style>
+    :root{
+      --bg:#0e1117;
+      --card:#171b22;
+      --card2:#20252f;
+      --text:#f6f7fb;
+      --muted:#aeb4c0;
+      --accent:#ff4b4b;
+      --good:#3ddc84;
+      --bad:#ff6b6b;
+      --border:#343b47;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      min-height:100vh;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom));
+    }
+    .app{max-width:760px;margin:auto}
+    header{padding:18px 0 8px}
+    h1{font-size:clamp(2.2rem,9vw,4rem);line-height:1;margin:0 0 8px;font-weight:900}
+    .sub{color:var(--muted);font-size:1rem}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;text-align:center;padding:10px 4px}
+    .stat small{display:block;color:var(--muted);font-size:.75rem}
+    .stat strong{font-size:1.45rem}
+    label.section{display:block;font-size:1.05rem;margin:12px 0 8px}
+    select,input,textarea,button{font:inherit}
+    select,input,textarea{
+      width:100%;background:var(--card2);color:var(--text);border:1px solid var(--border);
+      border-radius:14px;padding:14px 16px;
+    }
+    select{font-size:1.15rem}
+    .card{border:1px solid var(--border);background:var(--card);border-radius:20px;padding:20px;margin-top:16px}
+    .prompt{font-size:clamp(1.8rem,7vw,3rem);font-weight:900;line-height:1.15;margin:4px 0 18px}
+    .bigword{
+      font-size:clamp(3rem,14vw,5.5rem);font-weight:950;line-height:1.05;
+      text-align:center;letter-spacing:.08em;overflow-wrap:anywhere;margin:16px 0 24px
+    }
+    .answer-input{font-size:clamp(2rem,8vw,3rem);font-weight:800;text-align:center;letter-spacing:.04em}
+    .choices{display:grid;gap:12px}
+    .choice{
+      width:100%;text-align:left;padding:16px 18px;background:var(--card2);color:var(--text);
+      border:2px solid var(--border);border-radius:16px;font-size:clamp(1.9rem,7vw,2.8rem);
+      font-weight:800;letter-spacing:.02em;
+    }
+    .choice.selected{border-color:#8aa4ff;background:#282f43}
+    .primary,.secondary{
+      width:100%;border:0;border-radius:16px;padding:15px 18px;font-size:1.2rem;font-weight:800;margin-top:14px
+    }
+    .primary{background:var(--accent);color:white}
+    .secondary{background:var(--card2);color:white;border:1px solid var(--border)}
+    .feedback{font-size:1.25rem;font-weight:800;border-radius:14px;padding:14px 16px;margin-top:14px}
+    .good{background:rgba(61,220,132,.13);color:#86f0b4;border:1px solid rgba(61,220,132,.35)}
+    .bad{background:rgba(255,107,107,.12);color:#ff9f9f;border:1px solid rgba(255,107,107,.35)}
+    details{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-top:18px}
+    summary{font-size:1.1rem;font-weight:800;cursor:pointer}
+    textarea{min-height:220px;font-size:1.3rem;line-height:1.5;margin-top:12px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .words{font-size:1.25rem;line-height:1.8}
+    .tiny{font-size:.85rem;color:var(--muted);margin-top:10px}
+    .version{font-size:.72rem;color:#6f7886;text-align:center;margin-top:18px}
+    @media(max-width:420px){
+      body{padding-left:12px;padding-right:12px}
+      .stats{gap:6px}
+      .stat small{font-size:.65rem}
+      .stat strong{font-size:1.25rem}
+      .card{padding:16px}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>🪄 Spelling Adventure</h1>
+    <div class="sub">Practice, earn points, build a streak, and master every word.</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><small>⭐ Score</small><strong id="score">0</strong></div>
+    <div class="stat"><small>🔥 Streak</small><strong id="streak">0</strong></div>
+    <div class="stat"><small>✅ Correct</small><strong id="correct">0</strong></div>
+    <div class="stat"><small>🏆 Best</small><strong id="best">0</strong></div>
+  </div>
+
+  <label class="section" for="mode">Choose a game</label>
+  <select id="mode">
+    <option value="hear">🔊 Hear It & Spell It</option>
+    <option value="unscramble">🧩 Unscramble</option>
+    <option value="missing">🔤 Missing Letters</option>
+    <option value="choice">🎯 Pick the Correct Spelling</option>
+  </select>
+
+  <section class="card" id="game"></section>
+
+  <details>
+    <summary>⚙️ Parent Settings • Update Spelling Words</summary>
+    <div class="tiny">One word per line. The list is saved on this device.</div>
+    <textarea id="wordEditor"></textarea>
+    <div class="row">
+      <button class="primary" id="saveWords">Save New List</button>
+      <button class="secondary" id="resetScores">Reset Scores</button>
+    </div>
+  </details>
+
+  <details>
+    <summary>📚 Show this week's words</summary>
+    <div class="words" id="wordList"></div>
+  </details>
+
+  <div class="version">Spelling Adventure • Web App Build 1</div>
+</div>
+
+<script>
+const DEFAULT_WORDS = [
+  "disconnect","disobey","nondairy","nonremovable","nonstick",
+  "rearrange","refreeze","uncooked","unidentified","untangle"
+];
+
+let words = JSON.parse(localStorage.getItem("spellingWords") || "null") || DEFAULT_WORDS.slice();
+let score=0, streak=0, correct=0, best=0, checked=false, selected=null, current="";
+let review = {};
+
+const $ = id => document.getElementById(id);
+const game = $("game");
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function newWord(){
+  const pool=words.filter(w=>w!==current);
+  current=rand(pool.length?pool:words);
+  checked=false;selected=null;
+  render();
+}
+function updateStats(){
+  $("score").textContent=score;$("streak").textContent=streak;$("correct").textContent=correct;$("best").textContent=best;
+}
+function speakWord(){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(current);
+  u.lang="en-US";u.rate=.78;u.pitch=1;
+  speechSynthesis.speak(u);
+}
+function playTone(correctAnswer){
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(!Ctx) return;
+  const ctx=new Ctx();ctx.resume();
+  const now=ctx.currentTime;
+  const tones=correctAnswer ? [[523,.00,.11],[659,.12,.11],[784,.24,.20]] : [[190,.00,.13],[135,.14,.15],[95,.30,.20]];
+  tones.forEach(([f,o,d])=>{
+    const osc=ctx.createOscillator(),gain=ctx.createGain();
+    osc.type=correctAnswer?"sine":"sawtooth";osc.frequency.value=f;
+    gain.gain.setValueAtTime(.0001,now+o);gain.gain.exponentialRampToValueAtTime(.25,now+o+.015);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+o+d);
+    osc.connect(gain);gain.connect(ctx.destination);osc.start(now+o);osc.stop(now+o+d+.02);
+  });
+}
+function unscramble(w){
+  let a=w.split("");let s=w;
+  for(let n=0;n<30&&s===w;n++) s=shuffle(a).join("");
+  return s===w?w.split("").reverse().join(""):s;
+}
+function masked(w){
+  if(w.length<=2)return "_ ".repeat(w.length).trim();
+  const show=new Set([0,w.length-1]);
+  const inner=shuffle([...Array(w.length-2)].map((_,i)=>i+1));
+  while(show.size<Math.max(2,Math.round(w.length*.35)))show.add(inner.pop());
+  return [...w].map((c,i)=>show.has(i)?c:"_").join(" ");
+}
+function misspellings(w){
+  const set=new Set();
+  for(let i=0;i<w.length-1;i++){if(w[i]!==w[i+1]){let a=w.split("");[a[i],a[i+1]]=[a[i+1],a[i]];set.add(a.join(""))}}
+  for(let i=1;i<w.length-1;i++){set.add(w.slice(0,i)+w.slice(i+1));set.add(w.slice(0,i)+w[i]+w.slice(i))}
+  "aeiou".split("").forEach(()=>{});
+  for(let i=0;i<w.length;i++) if("aeiou".includes(w[i])) for(const v of "aeiou") if(v!==w[i]) set.add(w.slice(0,i)+v+w.slice(i+1));
+  set.delete(w); words.forEach(x=>set.delete(x));
+  let out=shuffle([...set]);
+  while(out.length<3){let i=Math.floor(Math.random()*w.length), c=String.fromCharCode(97+Math.floor(Math.random()*26));let x=w.slice(0,i)+c+w.slice(i+1);if(x!==w&&!words.includes(x)&&!out.includes(x))out.push(x)}
+  return out.slice(0,3);
+}
+function feedback(ok){
+  checked=true;
+  if(ok){score+=10;streak++;correct++;best=Math.max(best,streak);playTone(true)}
+  else{streak=0;review[current]=(review[current]||0)+1;playTone(false)}
+  updateStats();
+}
+function answerTyped(){
+  if(checked)return;
+  const input=$("answer");
+  if(!input.value.trim())return;
+  const ok=input.value.trim().toLowerCase()===current;
+  feedback(ok);render(ok);
+}
+function answerChoice(){
+  if(checked||selected===null)return;
+  const ok=selected===current;
+  feedback(ok);render(ok);
+}
+function resultHtml(ok){
+  if(!checked)return "";
+  return `<div class="feedback ${ok?"good":"bad"}">${ok?"🎉 Correct! +10 points":`💡 Almost! The correct spelling is <strong>${escapeHtml(current)}</strong>.`}</div>
+          <button class="primary" id="next">Next Word ➜</button>`;
+}
+function render(forcedResult){
+  const mode=$("mode").value;
+  let body="";
+  let ok=typeof forcedResult==="boolean"?forcedResult:null;
+
+  if(mode==="hear"){
+    body=`<div class="prompt">Listen, then spell the word.</div>
+      <button class="secondary" id="speak">🔊 Hear the Word</button>
+      <input class="answer-input" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word here" ${checked?"disabled":""}>
+      ${checked?resultHtml(ok):`<button class="primary" id="check">Check Answer</button>`}`;
+  } else if(mode==="unscramble"){
+    if(!window._scramble || window._scrambleWord!==current){window._scramble=unscramble(current);window._scrambleWord=current}
+    body=`<div class="prompt">Unscramble the letters</div><div class="bigword">${escapeHtml(window._scramble)}</div>
+      <input class="answer-input" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the full word" ${checked?"disabled":""}>
+      ${checked?resultHtml(ok):`<button class="primary" id="check">Check Answer</button>`}`;
+  } else if(mode==="missing"){
+    if(!window._mask || window._maskWord!==current){window._mask=masked(current);window._maskWord=current}
+    body=`<div class="prompt">Fill in the missing letters</div><div class="bigword">${escapeHtml(window._mask)}</div>
+      <input class="answer-input" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the complete word" ${checked?"disabled":""}>
+      ${checked?resultHtml(ok):`<button class="primary" id="check">Check Answer</button>`}`;
+  } else {
+    if(!window._choices || window._choicesWord!==current){window._choices=shuffle([current,...misspellings(current)]);window._choicesWord=current}
+    body=`<div class="prompt">Choose the correctly spelled word.</div><div class="choices">
+      ${window._choices.map((c,i)=>`<button class="choice ${selected===c?"selected":""}" data-choice="${escapeHtml(c)}" ${checked?"disabled":""}>${escapeHtml(c)}</button>`).join("")}
+      </div>${checked?resultHtml(ok):`<button class="primary" id="checkChoice">Check Answer</button>`}`;
+  }
+  game.innerHTML=body;
+
+  const speak=$("speak");if(speak)speak.onclick=speakWord;
+  const check=$("check");if(check)check.onclick=answerTyped;
+  const cc=$("checkChoice");if(cc)cc.onclick=answerChoice;
+  document.querySelectorAll(".choice").forEach(btn=>btn.onclick=()=>{if(checked)return;selected=btn.dataset.choice;render()});
+  const next=$("next");if(next)next.onclick=newWord;
+  const answer=$("answer");if(answer)answer.addEventListener("keydown",e=>{if(e.key==="Enter")answerTyped()});
+}
+$("mode").onchange=()=>{checked=false;selected=null;window._scramble=null;window._mask=null;window._choices=null;render()};
+$("wordEditor").value=words.join("\n");
+$("saveWords").onclick=()=>{
+  const next=$("wordEditor").value.split(/[\n,]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+  words=[...new Set(next)];
+  if(!words.length)return alert("Enter at least one spelling word.");
+  localStorage.setItem("spellingWords",JSON.stringify(words));
+  score=streak=correct=best=0;review={};current="";updateStats();renderWordList();newWord();
+  alert("New spelling list saved on this device.");
+};
+$("resetScores").onclick=()=>{score=streak=correct=best=0;review={};updateStats();newWord()};
+function renderWordList(){$("wordList").innerHTML=words.map(w=>`<div>• ${escapeHtml(w)}</div>`).join("")}
+renderWordList();updateStats();newWord();
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+</script>
+</body>
+</html>
