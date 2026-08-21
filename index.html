@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111318">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Spelling Adventure">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Spelling Adventure</title>
+  <style>
+    :root{
+      --bg:#0e1117;
+      --card:#171b22;
+      --card2:#20252f;
+      --text:#f6f7fb;
+      --muted:#aeb4c0;
+      --accent:#ff4b4b;
+      --good:#3ddc84;
+      --bad:#ff6b6b;
+      --border:#343b47;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      min-height:100vh;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom));
+    }
+    .app{max-width:760px;margin:auto}
+    header{padding:18px 0 8px}
+    h1{font-size:clamp(2.2rem,9vw,4rem);line-height:1;margin:0 0 8px;font-weight:900}
+    .sub{color:var(--muted);font-size:1rem}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;text-align:center;padding:10px 4px}
+    .stat small{display:block;color:var(--muted);font-size:.75rem}
+    .stat strong{font-size:1.45rem}
+    label.section{display:block;font-size:1.05rem;margin:12px 0 8px}
+    select,input,textarea,button{font:inherit}
+    select,input,textarea{
+      width:100%;background:var(--card2);color:var(--text);border:1px solid var(--border);
+      border-radius:14px;padding:14px 16px;
+    }
+    select{font-size:1.15rem}
+    .card{border:1px solid var(--border);background:var(--card);border-radius:20px;padding:20px;margin-top:16px}
+    .prompt{font-size:clamp(1.8rem,7vw,3rem);font-weight:900;line-height:1.15;margin:4px 0 18px}
+    .bigword{
+      font-size:clamp(3rem,14vw,5.5rem);font-weight:950;line-height:1.05;
+      text-align:center;letter-spacing:.08em;overflow-wrap:anywhere;margin:16px 0 24px
+    }
+    .answer-input{font-size:clamp(2rem,8vw,3rem);font-weight:800;text-align:center;letter-spacing:.04em}
+    .choices{display:grid;gap:12px}
+    .choice{
+      width:100%;text-align:left;padding:16px 18px;background:var(--card2);color:var(--text);
+      border:2px solid var(--border);border-radius:16px;font-size:clamp(1.9rem,7vw,2.8rem);
+      font-weight:800;letter-spacing:.02em;
+    }
+    .choice.selected{border-color:#8aa4ff;background:#282f43}
+
+    .hangman-wrap{
+      display:grid;
+      grid-template-columns:minmax(150px,.8fr) minmax(0,1.2fr);
+      gap:20px;
+      align-items:center;
+      margin:8px 0 18px;
+    }
+    .hangman-drawing{
+      width:100%;
+      max-width:240px;
+      margin:auto;
+      color:var(--text);
+    }
+    .hangman-drawing line,
+    .hangman-drawing circle{
+      stroke:currentColor;
+      stroke-width:7;
+      fill:none;
+      stroke-linecap:round;
+    }
+    .hangman-word{
+      font-size:clamp(2.25rem,10vw,4.25rem);
+      font-weight:950;
+      letter-spacing:.18em;
+      line-height:1.35;
+      text-align:center;
+      overflow-wrap:anywhere;
+      margin:12px 0;
+    }
+    .hangman-meta{
+      text-align:center;
+      color:var(--muted);
+      font-size:1rem;
+      margin-top:6px;
+    }
+    .letter-entry{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:end;
+      margin-top:14px;
+    }
+    .letter-entry input{
+      font-size:2rem;
+      font-weight:900;
+      text-align:center;
+      text-transform:uppercase;
+      min-height:58px;
+    }
+    .letter-entry button{
+      margin:0;
+      min-height:58px;
+      padding-left:18px;
+      padding-right:18px;
+    }
+    .used-letters{
+      margin-top:14px;
+      text-align:center;
+      font-size:1.05rem;
+      color:var(--muted);
+      min-height:1.6em;
+    }
+    @media(max-width:520px){
+      .hangman-wrap{grid-template-columns:1fr;gap:6px}
+      .hangman-drawing{max-width:180px}
+      .hangman-word{font-size:clamp(2.1rem,11vw,3.5rem)}
+    }
+
+    .primary,.secondary{
+      width:100%;border:0;border-radius:16px;padding:15px 18px;font-size:1.2rem;font-weight:800;margin-top:14px
+    }
+    .primary{background:var(--accent);color:white}
+    .secondary{background:var(--card2);color:white;border:1px solid var(--border)}
+    .feedback{font-size:1.25rem;font-weight:800;border-radius:14px;padding:14px 16px;margin-top:14px}
+    .good{background:rgba(61,220,132,.13);color:#86f0b4;border:1px solid rgba(61,220,132,.35)}
+    .bad{background:rgba(255,107,107,.12);color:#ff9f9f;border:1px solid rgba(255,107,107,.35)}
+    details{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-top:18px}
+    summary{font-size:1.1rem;font-weight:800;cursor:pointer}
+    textarea{min-height:220px;font-size:1.3rem;line-height:1.5;margin-top:12px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .words{font-size:1.25rem;line-height:1.8}
+    .tiny{font-size:.85rem;color:var(--muted);margin-top:10px}
+    .version{font-size:.68rem;color:#59616d;text-align:center;margin-top:28px;user-select:none}
+    dialog{border:0;padding:0;border-radius:20px;background:var(--card);color:var(--text);width:min(92vw,620px)}
+    dialog::backdrop{background:rgba(0,0,0,.72)}
+    .parent-modal{padding:22px;position:relative}
+    .parent-modal h2{margin:0 42px 4px 0;font-size:1.7rem}
+    .close-x{position:absolute;right:14px;top:10px;background:transparent;color:var(--muted);border:0;font-size:2rem;padding:6px 10px}
+    .parent-modal textarea{min-height:260px}
+    @media(max-width:420px){
+      body{padding-left:12px;padding-right:12px}
+      .stats{gap:6px}
+      .stat small{font-size:.65rem}
+      .stat strong{font-size:1.25rem}
+      .card{padding:16px}
+    }
+  
+    #celebrationLayer{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:9999}
+    .celebrate-piece{position:absolute;top:-12vh;font-size:clamp(1.7rem,6vw,3rem);animation:celebrateFall 2.2s ease-in forwards;will-change:transform,opacity}
+    @keyframes celebrateFall{
+      0%{transform:translateY(-10vh) rotate(0deg) scale(.85);opacity:0}
+      10%{opacity:1}
+      100%{transform:translateY(115vh) rotate(540deg) scale(1.15);opacity:0}
+    }
+
+  </style>
+</head>
+<body>
+<div id="celebrationLayer" aria-hidden="true"></div>
+<div class="app">
+  <header>
+    <h1>🪄 Spelling Adventure</h1>
+    <div class="sub">Practice, earn points, build a streak, and master every word.</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><small>⭐ Score</small><strong id="score">0</strong></div>
+    <div class="stat"><small>🔥 Streak</small><strong id="streak">0</strong></div>
+    <div class="stat"><small>✅ Correct</small><strong id="correct">0</strong></div>
+    <div class="stat"><small>🏆 Best</small><strong id="best">0</strong></div>
+  </div>
+
+  <label class="section" for="mode">Choose a game</label>
+  <select id="mode">
+    <option value="hear">🔊 Hear It & Spell It</option>
+    <option value="unscramble">🧩 Unscramble</option>
+    <option value="missing">🔤 Missing Letters</option>
+    <option value="choice">🎯 Pick the Correct Spelling</option>
+    <option value="hangman">🪢 Hangman</option>
+  </select>
+
+  <section class="card" id="game"></section>
+
+
+  <div class="version" id="parentAccess">Spelling Adventure • Web App Build 4</div>
+
+  <dialog id="parentDialog">
+    <div class="parent-modal">
+      <button class="close-x" id="closeParent" aria-label="Close">×</button>
+      <h2>Parent Settings</h2>
+      <p class="sub">Update the weekly spelling list. One word per line.</p>
+      <textarea id="wordEditor"></textarea>
+      <div class="row">
+        <button class="primary" id="saveWords">Save New List</button>
+        <button class="secondary" id="resetScores">Reset Scores</button>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<script>
+const DEFAULT_WORDS = [
+  "disconnect","disobey","nondairy","nonremovable","nonstick",
+  "rearrange","refreeze","uncooked","unidentified","untangle"
+];
+
+let words = JSON.parse(localStorage.getItem("spellingWords") || "null") || DEFAULT_WORDS.slice();
+let score=0, streak=0, correct=0, best=0, checked=false, selected=null, current="";
+let review = {};
+
+const $ = id => document.getElementById(id);
+const game = $("game");
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function newWord(){
+  const pool=words.filter(w=>w!==current);
+  current=rand(pool.length?pool:words);
+  checked=false;selected=null;
+  resetHangman();
+  render();
+}
+function updateStats(){
+  $("score").textContent=score;$("streak").textContent=streak;$("correct").textContent=correct;$("best").textContent=best;
+}
+function speakWord(){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(current);
+  u.lang="en-US";u.rate=.78;u.pitch=1;
+  speechSynthesis.speak(u);
+}
+
+const correctSound = new Audio("./correct.wav?v=4");
+const wrongSound = new Audio("./wrong.wav?v=4");
+correctSound.preload = "auto";
+wrongSound.preload = "auto";
+
+function unlockSounds(){
+  [correctSound, wrongSound].forEach(audio=>{
+    try{audio.volume=1;audio.load();}catch(e){}
+  });
+}
+
+function playTone(correctAnswer){
+  const audio=correctAnswer?correctSound:wrongSound;
+  try{
+    audio.pause();
+    audio.currentTime=0;
+    audio.volume=1;
+    const p=audio.play();
+    if(p && typeof p.catch==="function") p.catch(()=>{});
+  }catch(e){}
+}
+
+function celebrate(){
+  const layer=$("celebrationLayer");
+  if(!layer)return;
+  layer.innerHTML="";
+  const pieces=["🎈","🎉","⭐","✨","🎊"];
+  for(let i=0;i<28;i++){
+    const el=document.createElement("span");
+    el.className="celebrate-piece";
+    el.textContent=pieces[Math.floor(Math.random()*pieces.length)];
+    el.style.left=(Math.random()*96)+"%";
+    el.style.animationDelay=(Math.random()*.35)+"s";
+    el.style.animationDuration=(1.8+Math.random()*.9)+"s";
+    layer.appendChild(el);
+  }
+  setTimeout(()=>{layer.innerHTML=""},3200);
+}
+
+function unscramble(w){
+  let a=w.split("");let s=w;
+  for(let n=0;n<30&&s===w;n++) s=shuffle(a).join("");
+  return s===w?w.split("").reverse().join(""):s;
+}
+function masked(w){
+  if(w.length<=2)return "_ ".repeat(w.length).trim();
+  const show=new Set([0,w.length-1]);
+  const inner=shuffle([...Array(w.length-2)].map((_,i)=>i+1));
+  while(show.size<Math.max(2,Math.round(w.length*.35)))show.add(inner.pop());
+  return [...w].map((c,i)=>show.has(i)?c:"_").join(" ");
+}
+function misspellings(w){
+  const set=new Set();
+  for(let i=0;i<w.length-1;i++){if(w[i]!==w[i+1]){let a=w.split("");[a[i],a[i+1]]=[a[i+1],a[i]];set.add(a.join(""))}}
+  for(let i=1;i<w.length-1;i++){set.add(w.slice(0,i)+w.slice(i+1));set.add(w.slice(0,i)+w[i]+w.slice(i))}
+  "aeiou".split("").forEach(()=>{});
+  for(let i=0;i<w.length;i++) if("aeiou".includes(w[i])) for(const v of "aeiou") if(v!==w[i]) set.add(w.slice(0,i)+v+w.slice(i+1));
+  set.delete(w); words.forEach(x=>set.delete(x));
+  let out=shuffle([...set]);
+  while(out.length<3){let i=Math.floor(Math.random()*w.length), c=String.fromCharCode(97+Math.floor(Math.random()*26));let x=w.slice(0,i)+c+w.slice(i+1);if(x!==w&&!words.includes(x)&&!out.includes(x))out.push(x)}
+  return out.slice(0,3);
+}
+
+const HANGMAN_MAX_WRONG=6;
+let hangmanGuessed=new Set();
+let hangmanWrong=0;
+let hangmanFinished=false;
+
+function resetHangman(){
+  hangmanGuessed=new Set();
+  hangmanWrong=0;
+  hangmanFinished=false;
+}
+
+function hangmanMaskedWord(){
+  return [...current].map(ch=>hangmanGuessed.has(ch)?ch.toUpperCase():"_").join(" ");
+}
+
+function hangmanComplete(){
+  return [...new Set(current.split(""))].every(ch=>hangmanGuessed.has(ch));
+}
+
+function hangmanSvg(){
+  const parts=[
+    `<circle cx="120" cy="62" r="24"></circle>`,
+    `<line x1="120" y1="86" x2="120" y2="146"></line>`,
+    `<line x1="120" y1="103" x2="86" y2="126"></line>`,
+    `<line x1="120" y1="103" x2="154" y2="126"></line>`,
+    `<line x1="120" y1="146" x2="92" y2="184"></line>`,
+    `<line x1="120" y1="146" x2="148" y2="184"></line>`
+  ];
+  return `<svg class="hangman-drawing" viewBox="0 0 220 215" role="img" aria-label="Hangman with ${hangmanWrong} of ${HANGMAN_MAX_WRONG} wrong guesses">
+    <line x1="28" y1="202" x2="190" y2="202"></line>
+    <line x1="55" y1="202" x2="55" y2="18"></line>
+    <line x1="55" y1="18" x2="120" y2="18"></line>
+    <line x1="120" y1="18" x2="120" y2="38"></line>
+    ${parts.slice(0,hangmanWrong).join("")}
+  </svg>`;
+}
+
+function submitHangmanLetter(){
+  if(hangmanFinished)return;
+  unlockSounds();
+
+  const input=$("hangLetter");
+  if(!input)return;
+  const raw=input.value.trim().toLowerCase();
+  input.value="";
+
+  if(!/^[a-z]$/.test(raw)){
+    input.focus();
+    return;
+  }
+  if(hangmanGuessed.has(raw)){
+    input.focus();
+    return;
+  }
+
+  hangmanGuessed.add(raw);
+
+  if(!current.includes(raw)){
+    hangmanWrong++;
+    playTone(false);
+  }
+
+  if(hangmanComplete()){
+    hangmanFinished=true;
+    score+=10;
+    streak++;
+    correct++;
+    best=Math.max(best,streak);
+    updateStats();
+    playTone(true);
+    celebrate();
+  } else if(hangmanWrong>=HANGMAN_MAX_WRONG){
+    hangmanFinished=true;
+    streak=0;
+    review[current]=(review[current]||0)+1;
+    updateStats();
+    playTone(false);
+  }
+
+  render();
+}
+
+function feedback(ok){
+  checked=true;
+  if(ok){score+=10;streak++;correct++;best=Math.max(best,streak);playTone(true);celebrate()}
+  else{streak=0;review[current]=(review[current]||0)+1;playTone(false)}
+  updateStats();
+}
+function answerTyped(){
+  if(checked)return;
+  unlockSounds();
+  const input=$("answer");
+  if(!input.value.trim())return;
+  const ok=input.value.trim().toLowerCase()===current;
+  feedback(ok);render(ok);
+}
+function answerChoice(){
+  if(checked||selected===null)return;
+  unlockSounds();
+  const ok=selected===current;
+  feedback(ok);render(ok);
+}
+function resultHtml(ok){
+  if(!checked)return "";
+  return `<div class="feedback ${ok?"good":"bad"}">${ok?"🎉 Correct! +10 points":`💡 Almost! The correct spelling is <strong>${escapeHtml(current)}</strong>.`}</div>
+          <button class="primary" id="next">Next Word ➜</button>`;
+}
+function render(forcedResult){
+  const mode=$("mode").value;
+  let body="";
+  let ok=typeof forcedResult==="boolean"?forcedResult:null;
+
+  if(mode==="hear"){
+    body=`<div class="prompt">Listen, then spell the word.</div>
+      <button class="secondary" id="speak">🔊 Hear the Word</button>
+      <input class="answer-input" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word here" ${checked?"disabled":""}>
+      ${checked?resultHtml(ok):`<button class="primary" id="check">Check Answer</button>`}`;
+  } else if(mode==="unscramble"){
+    if(!window._scramble || window._scrambleWord!==current){window._scramble=unscramble(current);window._scrambleWord=current}
+    body=`<div class="prompt">Unscramble the letters</div><div class="bigword">${escapeHtml(window._scramble)}</div>
+      <input class="answer-input" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the full word" ${checked?"disabled":""}>
+      ${checked?resultHtml(ok):`<button class="primary" id="check">Check Answer</button>`}`;
+  } else if(mode==="missing"){
+    if(!window._mask || window._maskWord!==current){window._mask=masked(current);window._maskWord=current}
+    body=`<div class="prompt">Fill in the missing letters</div><div class="bigword">${escapeHtml(window._mask)}</div>
+      <input class="answer-input" id="answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the complete word" ${checked?"disabled":""}>
+      ${checked?resultHtml(ok):`<button class="primary" id="check">Check Answer</button>`}`;
+  } else if(mode==="choice") {
+    if(!window._choices || window._choicesWord!==current){window._choices=shuffle([current,...misspellings(current)]);window._choicesWord=current}
+    body=`<div class="prompt">Choose the correctly spelled word.</div><div class="choices">
+      ${window._choices.map((c,i)=>`<button class="choice ${selected===c?"selected":""}" data-choice="${escapeHtml(c)}" ${checked?"disabled":""}>${escapeHtml(c)}</button>`).join("")}
+      </div>${checked?resultHtml(ok):`<button class="primary" id="checkChoice">Check Answer</button>`}`;
+  } else {
+    const won=hangmanFinished && hangmanComplete();
+    const lost=hangmanFinished && !won;
+    const displayWord=lost ? current.toUpperCase().split("").join(" ") : hangmanMaskedWord();
+    const result=won
+      ? `<div class="feedback good">🎉 You saved the word! +10 points</div><button class="primary" id="next">Next Word ➜</button>`
+      : lost
+        ? `<div class="feedback bad">💡 Hangman is complete. The word was <strong>${escapeHtml(current)}</strong>.</div><button class="primary" id="next">Next Word ➜</button>`
+        : "";
+    body=`<div class="prompt">Guess one letter at a time</div>
+      <div class="hangman-wrap">
+        ${hangmanSvg()}
+        <div>
+          <div class="hangman-word">${escapeHtml(displayWord)}</div>
+          <div class="hangman-meta">${hangmanWrong} of ${HANGMAN_MAX_WRONG} wrong guesses</div>
+        </div>
+      </div>
+      ${hangmanFinished ? result : `
+        <div class="letter-entry">
+          <input id="hangLetter" maxlength="1" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Type one letter" placeholder="A">
+          <button class="primary" id="guessLetter" type="button">Guess</button>
+        </div>
+        <div class="used-letters">Used letters: ${[...hangmanGuessed].sort().map(x=>x.toUpperCase()).join(" · ") || "None yet"}</div>
+      `}`;
+  }
+  game.innerHTML=body;
+
+  const speak=$("speak");if(speak)speak.onclick=speakWord;
+  const check=$("check");if(check)check.onclick=answerTyped;
+  const cc=$("checkChoice");if(cc)cc.onclick=answerChoice;
+  const guessLetter=$("guessLetter");if(guessLetter)guessLetter.onclick=submitHangmanLetter;
+  const hangLetter=$("hangLetter");
+  if(hangLetter){
+    hangLetter.addEventListener("keydown",e=>{if(e.key==="Enter")submitHangmanLetter()});
+    hangLetter.addEventListener("input",()=>{hangLetter.value=hangLetter.value.replace(/[^a-zA-Z]/g,"").slice(0,1)});
+    setTimeout(()=>hangLetter.focus(),0);
+  }
+  document.querySelectorAll(".choice").forEach(btn=>btn.onclick=()=>{if(checked)return;selected=btn.dataset.choice;render()});
+  const next=$("next");if(next)next.onclick=newWord;
+  const answer=$("answer");if(answer)answer.addEventListener("keydown",e=>{if(e.key==="Enter")answerTyped()});
+}
+document.addEventListener("pointerdown",()=>{
+  if(!window.__spellingAudioPrimed){
+    window.__spellingAudioPrimed=true;
+    unlockSounds();
+  }
+},{once:true});
+
+$("mode").onchange=()=>{
+  checked=false;
+  selected=null;
+  window._scramble=null;
+  window._mask=null;
+  window._choices=null;
+  resetHangman();
+  render();
+};
+const parentDialog=$("parentDialog");
+let parentTapCount=0;
+let parentTapTimer=null;
+
+$("parentAccess").onclick=()=>{
+  parentTapCount++;
+  clearTimeout(parentTapTimer);
+  parentTapTimer=setTimeout(()=>{parentTapCount=0},1800);
+  if(parentTapCount>=5){
+    parentTapCount=0;
+    $("wordEditor").value=words.join("\n");
+    parentDialog.showModal();
+  }
+};
+$("closeParent").onclick=()=>parentDialog.close();
+parentDialog.addEventListener("click",e=>{if(e.target===parentDialog)parentDialog.close()});
+
+$("saveWords").onclick=()=>{
+  const next=$("wordEditor").value.split(/[\n,]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+  words=[...new Set(next)];
+  if(!words.length)return alert("Enter at least one spelling word.");
+  localStorage.setItem("spellingWords",JSON.stringify(words));
+  score=streak=correct=best=0;review={};current="";
+  updateStats();newWord();parentDialog.close();
+  alert("New spelling list saved.");
+};
+$("resetScores").onclick=()=>{
+  score=streak=correct=best=0;review={};updateStats();newWord();
+};
+
+updateStats();newWord();
+
+
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(reg=>reg.unregister())).catch(()=>{});
+}
+if("caches" in window){
+  caches.keys().then(keys=>keys.forEach(key=>caches.delete(key))).catch(()=>{});
+}
+
+</script>
+</body>
+</html>
