@@ -1,0 +1,149 @@
+* { box-sizing: border-box; }
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1e2430;
+  background: #f7f8fb;
+}
+body { margin: 0; min-height: 100vh; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+.app-shell {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: max(18px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+h1 { margin: 0; font-size: clamp(2rem, 8vw, 3rem); line-height: 1; }
+.topbar p, .parent-panel p { margin: 8px 0 0; color: #626b79; }
+.card {
+  background: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 18px;
+  padding: 16px;
+  margin-top: 14px;
+  box-shadow: 0 4px 18px rgba(24, 34, 52, .05);
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 14px;
+}
+.stats div {
+  background: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 14px;
+  padding: 10px 4px;
+  text-align: center;
+}
+.stats span { display: block; font-size: .72rem; color: #667080; white-space: nowrap; }
+.stats strong { display: block; margin-top: 3px; font-size: 1.35rem; }
+.section-label, label { font-weight: 700; display: block; margin-bottom: 7px; }
+select, textarea, input[type="text"], input[type="file"] {
+  width: 100%;
+  border: 1px solid #cfd5df;
+  border-radius: 12px;
+  padding: 12px;
+  background: white;
+}
+.game-card { text-align: center; min-height: 245px; }
+.prompt { font-size: 1.05rem; font-weight: 700; margin: 2px 0 12px; }
+.big-word {
+  font-size: clamp(2.3rem, 12vw, 4rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: .08em;
+  overflow-wrap: anywhere;
+  margin: 18px 0;
+}
+.answer-input {
+  width: 100%;
+  border: 2px solid #cfd5df;
+  border-radius: 14px;
+  padding: 15px;
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+.primary, .secondary, .choice {
+  border: 0;
+  border-radius: 13px;
+  padding: 13px 16px;
+  font-weight: 800;
+}
+.primary { background: #242b3a; color: white; }
+.secondary { background: #edf0f5; color: #242b3a; }
+.compact { padding: 10px 12px; white-space: nowrap; }
+.full { width: 100%; margin-top: 12px; }
+.choice {
+  display: block;
+  width: 100%;
+  margin: 9px 0;
+  background: #f2f4f8;
+  color: #202737;
+  font-size: 1.08rem;
+}
+.choice.selected { outline: 3px solid #5f6f89; background: #e7ebf2; }
+.actions { display: grid; grid-template-columns: 1fr; gap: 9px; margin-top: 12px; }
+.feedback { margin-top: 12px; padding: 14px; border-radius: 14px; font-weight: 800; text-align: center; }
+.feedback.good { background: #e8f7ee; }
+.feedback.bad { background: #fff0e7; }
+.hidden { display: none !important; }
+.plain-toggle { border: 0; background: transparent; padding: 2px; font-weight: 800; }
+.word-row { padding: 7px 0; border-bottom: 1px solid #eef0f4; }
+.hangman-art {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+  text-align: left;
+  display: inline-block;
+  font-size: 1.15rem;
+  line-height: 1.05;
+  margin: 6px auto;
+}
+.hangman-word {
+  font-size: clamp(1.7rem, 8vw, 3rem);
+  font-weight: 900;
+  letter-spacing: .18em;
+  overflow-wrap: anywhere;
+  margin: 12px 0;
+}
+.letter-entry { display: flex; gap: 8px; margin-top: 10px; }
+.letter-entry input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.guessed { color: #657080; margin-top: 10px; }
+dialog {
+  width: min(680px, calc(100% - 24px));
+  border: none;
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 24px 80px rgba(0,0,0,.28);
+}
+dialog::backdrop { background: rgba(20, 25, 35, .55); }
+.parent-panel { padding: 20px; }
+.dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.dialog-head h2 { margin: 0; }
+.icon-btn { border: 0; background: #edf0f5; border-radius: 50%; width: 38px; height: 38px; }
+.parent-panel textarea { margin-bottom: 8px; }
+.divider { display: flex; align-items: center; gap: 10px; color: #7b8493; margin: 14px 0; }
+.divider::before, .divider::after { content: ""; height: 1px; background: #e0e4ea; flex: 1; }
+.helper { font-size: .86rem; }
+.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px; }
+.loaded-count { text-align: center; }
+.mini-message { min-height: 20px; font-weight: 700; margin-top: 8px; }
+@media (max-width: 520px) {
+  .topbar { display: block; }
+  .topbar .compact { margin-top: 12px; width: 100%; }
+  .dialog-actions { grid-template-columns: 1fr; }
+  .stats span { font-size: .62rem; }
+  .stats strong { font-size: 1.15rem; }
+}
