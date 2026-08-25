@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Spelling Adventure</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>🪄 Spelling Adventure</h1>
+        <p>Practice, earn points, build a streak, and master every word.</p>
+      </div>
+      <button id="parentBtn" class="secondary compact" type="button">⚙️ Settings</button>
+    </header>
+
+    <section class="player-bar card">
+      <div class="player-switch">
+        <button id="player1Btn" class="player-tab active" type="button">Player 1</button>
+        <button id="player2Btn" class="player-tab" type="button">Player 2</button>
+      </div>
+      <div class="round-progress">
+        <strong id="playerNameDisplay">Player 1</strong>
+        <span id="roundProgress">Word 1 of 10</span>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Game statistics">
+      <div><span>⭐ Score</span><strong id="score">0</strong></div>
+      <div><span>🔥 Streak</span><strong id="streak">0</strong></div>
+      <div><span>✅ Correct</span><strong id="correct">0</strong></div>
+      <div><span>🏆 Best</span><strong id="best">0</strong></div>
+    </section>
+
+    <section class="card">
+      <label for="modeSelect" class="section-label">Choose a game</label>
+      <select id="modeSelect">
+        <option value="hear">🔊 Hear It & Spell It</option>
+        <option value="pick">🎯 Pick the Correct Spelling</option>
+        <option value="unscramble">🧩 Unscramble</option>
+        <option value="missing">🔤 Missing Letters</option>
+        <option value="hangman">🪢 Hangman</option>
+      </select>
+    </section>
+
+    <section id="gameCard" class="card game-card"></section>
+
+    <section id="feedback" class="feedback hidden" aria-live="polite"></section>
+
+    <button id="nextBtn" class="primary full hidden" type="button">Next Word ➜</button>
+  </main>
+
+  <dialog id="parentDialog">
+    <form method="dialog" class="parent-panel">
+      <div class="dialog-head">
+        <div>
+          <h2>👩‍🏫 Parent Setup</h2>
+          <p>Each player keeps a separate word list and progress.</p>
+        </div>
+        <button value="cancel" class="icon-btn" aria-label="Close">✕</button>
+      </div>
+
+      <div class="settings-player-tabs">
+        <button id="settingsP1" type="button" class="player-tab active">Player 1</button>
+        <button id="settingsP2" type="button" class="player-tab">Player 2</button>
+      </div>
+
+      <label for="playerNameInput">Player name</label>
+      <input id="playerNameInput" type="text" maxlength="20" placeholder="Enter player name" />
+
+      <label for="wordText">Spelling words</label>
+      <textarea id="wordText" rows="11" placeholder="Enter one word per line, or separate words with commas"></textarea>
+      <p class="helper">Type or paste the weekly spelling words here.</p>
+
+      <div id="uploadMessage" class="mini-message" aria-live="polite"></div>
+
+      <div class="dialog-actions">
+        <button id="loadWordsBtn" class="primary" type="button">Save Player</button>
+        <button id="resetScoresBtn" class="secondary" type="button">Reset This Player</button>
+      </div>
+
+      <p class="loaded-count">Words loaded: <strong id="loadedCount">0</strong></p>
+    </form>
+  </dialog>
+
+  <dialog id="roundDialog">
+    <div class="parent-panel end-panel">
+      <h2 id="roundTitle">🎉 Adventure Complete!</h2>
+      <p id="roundSummary"></p>
+      <div id="missedSummary" class="missed-summary"></div>
+      <div class="dialog-actions">
+        <button id="playAgainBtn" class="primary" type="button">Play Again</button>
+        <button id="practiceMissedBtn" class="secondary" type="button">Practice Missed Words</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
